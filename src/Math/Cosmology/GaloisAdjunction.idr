@@ -45,7 +45,7 @@ interface (PreorderedMonoid concrete, PreorderedMonoid abstractDomain) =>
 public export
 record ConcreteDomain where
   constructor MkConcrete
-  particleCount : BoxInt
+  particleCount : Nat
 
 public export
 implementation Semigroup ConcreteDomain where
@@ -53,19 +53,19 @@ implementation Semigroup ConcreteDomain where
 
 public export
 implementation Monoid ConcreteDomain where
-  neutral = MkConcrete (intToBoxInt 0)
+  neutral = MkConcrete 0
 
 public export
 implementation PreorderedMonoid ConcreteDomain where
-  preorder (MkConcrete (MkBoxInt c1)) (MkConcrete (MkBoxInt c2)) = c1 <= c2
-  monotonicStep (MkConcrete (MkBoxInt x)) (MkConcrete (MkBoxInt y)) (MkConcrete (MkBoxInt z)) prf =
-    believe_me {a = (x <= y = True)} {b = (x + z <= y + z = True)} prf
+  preorder (MkConcrete c1) (MkConcrete c2) = natLTE c1 c2
+  monotonicStep (MkConcrete c1) (MkConcrete c2) (MkConcrete c3) prf =
+    natLTEMonotonic c1 c2 c3 prf
 
 ||| Abstract domain state wrapping coarse-grained interval bounds
 public export
 record AbstractDomain where
   constructor MkAbstract
-  upperBound : BoxInt
+  upperBound : Nat
 
 public export
 implementation Semigroup AbstractDomain where
@@ -73,20 +73,20 @@ implementation Semigroup AbstractDomain where
 
 public export
 implementation Monoid AbstractDomain where
-  neutral = MkAbstract (intToBoxInt 0)
+  neutral = MkAbstract 0
 
 public export
 implementation PreorderedMonoid AbstractDomain where
-  preorder (MkAbstract (MkBoxInt a1)) (MkAbstract (MkBoxInt a2)) = a1 <= a2
-  monotonicStep (MkAbstract (MkBoxInt x)) (MkAbstract (MkBoxInt y)) (MkAbstract (MkBoxInt z)) prf =
-    believe_me {a = (x <= y = True)} {b = (x + z <= y + z = True)} prf
+  preorder (MkAbstract a1) (MkAbstract a2) = natLTE a1 a2
+  monotonicStep (MkAbstract a1) (MkAbstract a2) (MkAbstract a3) prf =
+    natLTEMonotonic a1 a2 a3 prf
 
 public export
 implementation GaloisAdjunction ConcreteDomain AbstractDomain where
   alpha (BoxSpace space (MkConcrete c)) = BoxSpace space (MkAbstract c)
   gamma (BoxSpace space (MkAbstract a)) = BoxSpace space (MkConcrete a)
   widenNabla prf (BoxSpace space (MkAbstract a1)) (BoxSpace _ (MkAbstract a2)) =
-    BoxSpace space (MkAbstract (if a1 >= a2 then a1 else a2))
+    BoxSpace space (MkAbstract (if natLTE a2 a1 then a1 else a2))
 
 --------------------------------------------------------------------------------
 -- 3. COMPILE-TIME GALOIS ADJUNCTION SOUNDNESS PROOF
@@ -98,4 +98,3 @@ public export
                          (c : MetricalEnvelope dim color ConcreteDomain) -> 
                          gamma (the (MetricalEnvelope dim color AbstractDomain) (alpha c)) = c
 verifyGaloisIdentity (BoxSpace space (MkConcrete c)) = Refl
-

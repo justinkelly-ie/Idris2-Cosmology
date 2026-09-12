@@ -73,7 +73,7 @@ metricalCoarseGrain : {dim : Nat} -> {color : MetricColor} ->
                       MetricalEnvelope dim color ConcreteDomain -> 
                       MetricalEnvelope dim color MacroCosmicEnvelope
 metricalCoarseGrain (BoxSpace space (MkConcrete c)) =
-  BoxSpace space (MkMacroCosmic (intToBoxInt 1) c (intToBoxInt 55) (intToBoxInt 128))
+  BoxSpace space (MkMacroCosmic (intToBoxInt 1) (natToBoxInt c) (intToBoxInt 55) (intToBoxInt 128))
 
 ||| Dynamically parameterized Galois coarse-graining abstraction with explicit scale factor and channel residues.
 public export
@@ -84,7 +84,7 @@ metricalCoarseGrainWithScale : {dim : Nat} -> {color : MetricColor} ->
                                 MetricalEnvelope dim color ConcreteDomain -> 
                                 MetricalEnvelope dim color MacroCosmicEnvelope
 metricalCoarseGrainWithScale scale darkRes clustering (BoxSpace space (MkConcrete c)) =
-  BoxSpace space (MkMacroCosmic scale c darkRes clustering)
+  BoxSpace space (MkMacroCosmic scale (natToBoxInt c) darkRes clustering)
 
 ||| Static compiler verification proof proving that coarse-graining of initial baryonic matter (27)
 ||| preserves the Primorial 210 total mass budget.
