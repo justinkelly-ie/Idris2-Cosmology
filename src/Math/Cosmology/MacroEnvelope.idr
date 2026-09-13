@@ -27,6 +27,10 @@ Eq MacroCosmicEnvelope where
   (MkMacroCosmic s1 b1 d1 c1) == (MkMacroCosmic s2 b2 d2 c2) =
     s1 == s2 && b1 == b2 && d1 == d2 && c1 == c2
 
+public export
+Show MacroCosmicEnvelope where
+  show (MkMacroCosmic s b d c) = "MacroCosmic(scale=" ++ show s ++ ", B=" ++ show b ++ ", D=" ++ show d ++ ", H2O=" ++ show c ++ ")"
+
 ||| Initial cosmic budget initialization: Primorial 210 decomposition (27 + 128 + 55)
 public export
 initMacroCosmicEnvelope : MacroCosmicEnvelope

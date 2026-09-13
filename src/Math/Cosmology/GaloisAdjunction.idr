@@ -49,6 +49,14 @@ record ConcreteDomain where
   particleCount : Nat
 
 public export
+Eq ConcreteDomain where
+  (MkConcrete c1) == (MkConcrete c2) = c1 == c2
+
+public export
+Show ConcreteDomain where
+  show (MkConcrete c) = "Concrete(" ++ show c ++ ")"
+
+public export
 implementation Semigroup ConcreteDomain where
   (MkConcrete c1) <+> (MkConcrete c2) = MkConcrete (c1 + c2)
 
@@ -67,6 +75,14 @@ public export
 record AbstractDomain where
   constructor MkAbstract
   upperBound : Nat
+
+public export
+Eq AbstractDomain where
+  (MkAbstract a1) == (MkAbstract a2) = a1 == a2
+
+public export
+Show AbstractDomain where
+  show (MkAbstract a) = "Abstract(" ++ show a ++ ")"
 
 public export
 implementation Semigroup AbstractDomain where
