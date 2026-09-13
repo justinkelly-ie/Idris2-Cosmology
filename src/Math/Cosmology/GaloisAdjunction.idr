@@ -7,6 +7,7 @@ import Core.Goh
 import Geometry.Applicative
 import Geometry.MetricalBounds
 import Math.Thermodynamics.PreorderedMonoid
+import Core.Order.Preorder
 
 %default total
 
