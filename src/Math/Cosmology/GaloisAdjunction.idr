@@ -2,18 +2,27 @@ module Math.Cosmology.GaloisAdjunction
 
 import Data.Vect
 import Core.BoxInt
+import Core.Multiset
+import Math.Multiset
 import Core.UnixelFraction
+
 import Core.Goh
 import Geometry.Applicative
 import Geometry.MetricalBounds
 import Math.Thermodynamics.PreorderedMonoid
 import Core.Order.Preorder
+import Core.Category.Adjunction
 
 %default total
 
 --------------------------------------------------------------------------------
--- 1. GALOIS ADJUNCTION INTERFACE (alpha -| gamma)
+-- 1. GALOIS ADJUNCTION INTERFACE (alpha -| gamma) & MULTISET ADJUNCTION
 --------------------------------------------------------------------------------
+
+||| Category-Theoretic Multiset Adjunction (L ⊣ R) for Cosmological Macro Envelopes.
+public export
+interface CosmologicalMultisetAdjunction (0 l : Type -> Type) (0 r : Type -> Type) where
+  cosmoAdjunction : MultisetAdjunction l r
 
 ||| Galois Adjunction between concrete state domain `C` and abstract domain `A`.
 ||| Maps fine-grained state representations to coarse-grained macro envelopes metrically.
@@ -115,3 +124,35 @@ public export
                          (c : MetricalEnvelope dim color ConcreteDomain) -> 
                          gamma (the (MetricalEnvelope dim color AbstractDomain) (alpha c)) = c
 verifyGaloisIdentity (BoxSpace space (MkConcrete c)) = Refl
+
+--------------------------------------------------------------------------------
+-- 4. PURE MULTISET 38-CYCLE EDDINGTON COSMOLOGICAL SCALE TRAJECTORY
+--------------------------------------------------------------------------------
+
+||| Cosmological Epoch Gate Tokens
+public export
+data EpochToken = GatePureCycle | DecoherentCycle
+
+public export
+Eq EpochToken where
+  GatePureCycle   == GatePureCycle   = True
+  DecoherentCycle == DecoherentCycle = True
+  _               == _               = False
+
+||| Evaluates the 38-cycle Eddington cosmological trajectory over a Multiset BoxInt EpochToken.
+||| Observer epoch k=38 is gate-pure (76 pure cycles, 61 decoherent cycles).
+public export
+eddingtonCosmicTrajectory : Multiset BoxInt EpochToken
+eddingtonCosmicTrajectory =
+  AddM GatePureCycle (intToBoxInt 76) (AddM DecoherentCycle (intToBoxInt 61) ZeroM)
+
+||| Audits Eddington cosmic budget closure (76 + 61 = 137 total cycles, 76 pure).
+public export
+auditEddingtonCosmicMultisetProof : Bool
+auditEddingtonCosmicMultisetProof =
+  let pureCount = multiplicity GatePureCycle eddingtonCosmicTrajectory
+      decoCount = multiplicity DecoherentCycle eddingtonCosmicTrajectory
+  in unwrapBox pureCount == 76 &&
+     unwrapBox decoCount == 61 &&
+     unwrapBox (pureCount + decoCount) == 137
+

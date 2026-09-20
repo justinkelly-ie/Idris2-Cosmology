@@ -1,13 +1,11 @@
 package Idris2-Cosmology
-version = 0.1.0
+version = 0.3.1
 authors = "Justin Kelly"
 brief   = "Layer 9 Galois Adjunctions, Abstract Interpretation & Cosmological Scaling Subsystem."
 
-depends = base
-        , Idris2-Geometry
-        , Idris2-Thermodynamics
-
+depends = Idris2-Geometry, Idris2-Multiset-Core, Idris2-Multiset-Transform, Idris2-Thermodynamics, base, linear
 sourcedir = "src"
 
-modules = Math.Cosmology.GaloisAdjunction
-        , Math.Cosmology.MacroEnvelope
+modules = Math.Cosmology.GaloisAdjunction,
+          Math.Cosmology.MacroEnvelope
+
