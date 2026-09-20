@@ -1,6 +1,7 @@
 module Math.Cosmology.CapacityBudget
 
 import public Core
+import public Core.TypeTheory.ThreeLevel
 import public Math.Cosmology.MetricLawLedger
 
 %default total
@@ -79,6 +80,15 @@ genesisVacuumBudget = epochCapacityBudget 1
 %inline public export
 observerEpoch37Budget : CapacityBudget
 observerEpoch37Budget = epochCapacityBudget 37
+
+--------------------------------------------------------------------------------
+-- 4. 3LTT QTT LINEAR COSMIC HYPER-CYCLE BUDGET MAPPING
+--------------------------------------------------------------------------------
+
+||| Evaluates the capacity budget for a 3LTT ParameterizedCycleState u e state.
+%inline public export
+capacityBudgetForCycleState : ParameterizedCycleState u e a -> CapacityBudget
+capacityBudgetForCycleState (MkCycleState u e _) = epochCapacityBudget e
 
 --------------------------------------------------------------------------------
 -- 4. FORMAL CONSTRUCTIVE PROOF WITNESSES
