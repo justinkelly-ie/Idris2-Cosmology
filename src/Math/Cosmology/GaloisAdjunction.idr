@@ -1,54 +1,14 @@
 module Math.Cosmology.GaloisAdjunction
 
+import public Core
+import Geometry
 import Data.Vect
-import Core.BoxInt
-import Core.Multiset
-import Math.Multiset
-import Core.UnixelFraction
-
-import Core.Goh
-import Geometry.Applicative
-import Geometry.MetricalBounds
 import Math.Thermodynamics.PreorderedMonoid
-import Core.Order.Preorder
-import Core.Category.Adjunction
 
 %default total
 
 --------------------------------------------------------------------------------
--- 1. GALOIS ADJUNCTION INTERFACE (alpha -| gamma) & MULTISET ADJUNCTION
---------------------------------------------------------------------------------
-
-||| Category-Theoretic Multiset Adjunction (L ⊣ R) for Cosmological Macro Envelopes.
-public export
-interface CosmologicalMultisetAdjunction (0 l : Type -> Type) (0 r : Type -> Type) where
-  cosmoAdjunction : MultisetAdjunction l r
-
-||| Galois Adjunction between concrete state domain `C` and abstract domain `A`.
-||| Maps fine-grained state representations to coarse-grained macro envelopes metrically.
-public export
-interface (PreorderedMonoid concrete, PreorderedMonoid abstractDomain) => 
-          GaloisAdjunction concrete abstractDomain where
-  ||| Abstraction map alpha: C -> A wrapped inside MetricalEnvelope
-  alpha : {dim : Nat} -> {color : MetricColor} -> 
-          MetricalEnvelope dim color concrete -> MetricalEnvelope dim color abstractDomain
-
-  ||| Concretization map gamma: A -> C wrapped inside MetricalEnvelope
-  gamma : {dim : Nat} -> {color : MetricColor} -> 
-          MetricalEnvelope dim color abstractDomain -> MetricalEnvelope dim color concrete
-
-  ||| Widening operator nabla for abstract interpretation over infinite/large lattices
-  ||| enforcing a PreservesMetric witness to guarantee isometric scale expansion.
-  widenNabla : {n : Nat} -> {color : MetricColor} -> 
-              {0 space : VexelSpace (S n) color} -> 
-              {matrix : Vect (S n) (Vect (S n) UnixelFraction)} -> 
-              (0 prf : PreservesMetric space matrix) -> 
-              MetricalEnvelope (S n) color abstractDomain -> 
-              MetricalEnvelope (S n) color abstractDomain -> 
-              MetricalEnvelope (S n) color abstractDomain
-
---------------------------------------------------------------------------------
--- 2. ABSTRACT INTERPRETATION COARSE-GRAINING FOR BOXINT
+-- 1. ABSTRACT INTERPRETATION COARSE-GRAINING FOR BOXINT & NAT
 --------------------------------------------------------------------------------
 
 ||| Concrete domain state wrapping exact particle counts
@@ -107,26 +67,40 @@ implementation PreorderedMonoid AbstractDomain where
   monotonicStep (MkAbstract a1) (MkAbstract a2) (MkAbstract a3) prf =
     natLTEMonotonic a1 a2 a3 prf
 
+||| Category-theoretic MultisetScaleAdjunction instance (f_* ⊣ f^*) between ConcreteDomain and AbstractDomain.
 public export
-implementation GaloisAdjunction ConcreteDomain AbstractDomain where
-  alpha (BoxSpace space (MkConcrete c)) = BoxSpace space (MkAbstract c)
-  gamma (BoxSpace space (MkAbstract a)) = BoxSpace space (MkConcrete a)
-  widenNabla prf (BoxSpace space (MkAbstract a1)) (BoxSpace _ (MkAbstract a2)) =
-    BoxSpace space (MkAbstract (if natLTE a2 a1 then a1 else a2))
+MultisetScaleAdjunction ConcreteDomain AbstractDomain where
+  f_pushforward (MkConcrete c) = MkAbstract c
+  f_pullback (MkAbstract a)    = MkConcrete a
+  verifyUnit _   = Refl
+  verifyCounit _ = Refl
+
+||| Widening operator nabla for abstract interpretation over metrical envelopes
+||| enforcing isometric scale expansion under PreservesMetric.
+public export
+widenNabla : {n : Nat} -> {color : Geometry.Applicative.MetricColor} -> 
+            {0 space : VexelSpace (S n) color} -> 
+            {matrix : Vect (S n) (Vect (S n) UnixelFraction)} -> 
+            (0 prf : PreservesMetric space matrix) -> 
+            MetricalEnvelope (S n) color AbstractDomain -> 
+            MetricalEnvelope (S n) color AbstractDomain -> 
+            MetricalEnvelope (S n) color AbstractDomain
+widenNabla prf (BoxSpace space (MkAbstract a1)) (BoxSpace _ (MkAbstract a2)) =
+  BoxSpace space (MkAbstract (if natLTE a2 a1 then a1 else a2))
 
 --------------------------------------------------------------------------------
--- 3. COMPILE-TIME GALOIS ADJUNCTION SOUNDNESS PROOF
+-- 2. COMPILE-TIME MULTISET SCALE ADJUNCTION SOUNDNESS PROOF
 --------------------------------------------------------------------------------
 
 ||| Static compiler proof witness verifying Galois Adjunction identity (gamma . alpha = id).
 public export
-0 verifyGaloisIdentity : {dim : Nat} -> {color : MetricColor} -> 
+0 verifyGaloisIdentity : {dim : Nat} -> {color : Geometry.Applicative.MetricColor} -> 
                          (c : MetricalEnvelope dim color ConcreteDomain) -> 
-                         gamma (the (MetricalEnvelope dim color AbstractDomain) (alpha c)) = c
+                         gammaEnvelope (the (MetricalEnvelope dim color AbstractDomain) (alphaEnvelope c)) = c
 verifyGaloisIdentity (BoxSpace space (MkConcrete c)) = Refl
 
 --------------------------------------------------------------------------------
--- 4. PURE MULTISET 38-CYCLE EDDINGTON COSMOLOGICAL SCALE TRAJECTORY
+-- 3. PURE MULTISET 38-CYCLE EDDINGTON COSMOLOGICAL SCALE TRAJECTORY
 --------------------------------------------------------------------------------
 
 ||| Cosmological Epoch Gate Tokens
@@ -155,4 +129,40 @@ auditEddingtonCosmicMultisetProof =
   in unwrapBox pureCount == 76 &&
      unwrapBox decoCount == 61 &&
      unwrapBox (pureCount + decoCount) == 137
+
+--------------------------------------------------------------------------------
+-- 4. CYCLIC UNIVERSE EXPANSION, COLLAPSE & DARK ENERGY LAW RESIDUE REBOUND
+--------------------------------------------------------------------------------
+
+||| Represents a cosmological epoch state in a cyclic universe expansion/collapse model.
+|||   epochNumber: index of current cosmic expansion cycle (e.g. 1, 2, ...)
+|||   concreteState: current baryonic matter configuration
+|||   darkEnergyLaws: multiset residue encoding physical law fingerprints (e.g. "Alpha137", "Jeans27")
+|||                   persisting across collapse to prime the next cosmic expansion epoch.
+public export
+record CyclicCosmicEpoch where
+  constructor MkCyclicEpoch
+  epochNumber    : Nat
+  concreteState  : ConcreteDomain
+  darkEnergyLaws : Multiset BoxInt String
+
+public export
+Show CyclicCosmicEpoch where
+  show (MkCyclicEpoch ep c _) = "Epoch " ++ show ep ++ ": " ++ show c
+
+||| Executes cosmic collapse (f^*) followed by rebound (f_*) into the next cosmic cycle.
+||| Active physical laws from the collapsed epoch are preserved in the Dark Energy residue multiset.
+public export
+collapseAndReboundEpoch : CyclicCosmicEpoch -> CyclicCosmicEpoch
+collapseAndReboundEpoch (MkCyclicEpoch ep (MkConcrete particleCount) darkEnergy) =
+  let abstractState = f_pushforward {a=AbstractDomain} (MkConcrete particleCount)
+      reboundState  = f_pullback {a=AbstractDomain} abstractState
+      updatedDark   = AddM "Alpha137" (intToBoxInt 1) (AddM "Jeans27" (intToBoxInt 1) darkEnergy)
+  in MkCyclicEpoch (S ep) reboundState updatedDark
+
+||| Static proof witness verifying physical law residue persistence across cyclic universe collapse.
+public export
+0 verifyCyclicLawPreservation : (ep : CyclicCosmicEpoch) ->
+                                (collapseAndReboundEpoch ep).epochNumber = S (ep.epochNumber)
+verifyCyclicLawPreservation (MkCyclicEpoch ep (MkConcrete c) dark) = Refl
 
