@@ -75,6 +75,79 @@ MultisetScaleAdjunction ConcreteDomain AbstractDomain where
   verifyUnit _   = Refl
   verifyCounit _ = Refl
 
+--------------------------------------------------------------------------------
+-- 1B. CATEGORY-THEORETIC HOM-TENSOR MULTISET ADJUNCTION (L ⊣ R)
+--------------------------------------------------------------------------------
+
+||| Left adjoint scale functor L_Cosmic wrapping concrete states and payload a
+public export
+data ConcreteScaleFunctor : Type -> Type where
+  MkConcreteScaleFunctor : ConcreteDomain -> a -> ConcreteScaleFunctor a
+
+public export
+Functor ConcreteScaleFunctor where
+  map f (MkConcreteScaleFunctor c x) = MkConcreteScaleFunctor c (f x)
+
+public export
+(Eq a) => Eq (ConcreteScaleFunctor a) where
+  (MkConcreteScaleFunctor c1 x1) == (MkConcreteScaleFunctor c2 x2) = c1 == c2 && x1 == x2
+
+||| Right adjoint scale functor R_Cosmic wrapping abstract states and payload a
+public export
+data AbstractScaleFunctor : Type -> Type where
+  MkAbstractScaleFunctor : AbstractDomain -> a -> AbstractScaleFunctor a
+
+public export
+Functor AbstractScaleFunctor where
+  map f (MkAbstractScaleFunctor ab x) = MkAbstractScaleFunctor ab (f x)
+
+public export
+(Eq a) => Eq (AbstractScaleFunctor a) where
+  (MkAbstractScaleFunctor a1 x1) == (MkAbstractScaleFunctor a2 x2) = a1 == a2 && x1 == x2
+
+||| Direct hom-tensor forward isomorphism mapping concrete to abstract scale multiset tensors.
+public export
+scaleHomTensorIso : MultisetTensor (ConcreteScaleFunctor a) b -> MultisetTensor a (AbstractScaleFunctor b)
+scaleHomTensorIso ZeroM = ZeroM
+scaleHomTensorIso (AddM (MkConcreteScaleFunctor (MkConcrete c) x, b) w rest) =
+  AddM (x, MkAbstractScaleFunctor (MkAbstract c) b) w (scaleHomTensorIso rest)
+
+||| Direct hom-tensor inverse isomorphism mapping abstract to concrete scale multiset tensors.
+public export
+scaleHomTensorInv : MultisetTensor a (AbstractScaleFunctor b) -> MultisetTensor (ConcreteScaleFunctor a) b
+scaleHomTensorInv ZeroM = ZeroM
+scaleHomTensorInv (AddM (x, MkAbstractScaleFunctor (MkAbstract c) b) w rest) =
+  AddM (MkConcreteScaleFunctor (MkConcrete c) x, b) w (scaleHomTensorInv rest)
+
+||| Top-level static proof witness verifying hom-tensor round-trip forward isomorphism identity.
+public export
+0 proofHomIso : (t : MultisetTensor (ConcreteScaleFunctor a) b) ->
+                scaleHomTensorInv (scaleHomTensorIso t) = t
+proofHomIso ZeroM = Refl
+proofHomIso (AddM (MkConcreteScaleFunctor (MkConcrete c) x, y) w rest) =
+  let rec = proofHomIso rest
+  in cong (AddM (MkConcreteScaleFunctor (MkConcrete c) x, y) w) rec
+
+||| Top-level static proof witness verifying hom-tensor round-trip inverse isomorphism identity.
+public export
+0 proofHomInv : (u : MultisetTensor a (AbstractScaleFunctor b)) ->
+                scaleHomTensorIso (scaleHomTensorInv u) = u
+proofHomInv ZeroM = Refl
+proofHomInv (AddM (x, MkAbstractScaleFunctor (MkAbstract c) y) w rest) =
+  let rec = proofHomInv rest
+  in cong (AddM (x, MkAbstractScaleFunctor (MkAbstract c) y) w) rec
+
+||| Category-Theoretic MultisetAdjunction instance L_Cosmic ⊣ R_Cosmic
+||| between concrete and abstract cosmological scale space preserving exact BoxInt hom-tensor proof witnesses.
+public export
+MultisetAdjunction ConcreteScaleFunctor AbstractScaleFunctor where
+  leftAdjoint x = MkConcreteScaleFunctor (MkConcrete 0) x
+  rightAdjoint (MkConcreteScaleFunctor _ x) = x
+  homTensorIso = scaleHomTensorIso
+  homTensorInv = scaleHomTensorInv
+  verifyHomIso = proofHomIso
+  verifyHomInv = proofHomInv
+
 ||| Widening operator nabla for abstract interpretation over metrical envelopes
 ||| enforcing isometric scale expansion under PreservesMetric.
 public export
