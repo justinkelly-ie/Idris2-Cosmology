@@ -1,6 +1,6 @@
-# 🌌 Idris2-Cosmology (Layer 9)
+# 🌌 FinSc-Cosmology (Layer 9)
 
-`Idris2-Cosmology` forms **Layer 9** in the 10-layer constructive non-linear multiset science framework. It provides Galois Adjunctions ($\alpha \dashv \gamma$), abstract interpretation, widening operators ($\nabla$), macro-scale cosmological fluid envelopes, star formation thresholds, and Primorial 210 mass budget conservation ($27 \text{ Baryon} + 55 \text{ Dark} + 128 \text{ H}_2\text{O} = 210$).
+`FinSc-Cosmology` forms **Layer 9** in the 10-layer constructive non-linear multiset science framework. It provides Galois Adjunctions ($\alpha \dashv \gamma$), abstract interpretation, widening operators ($\nabla$), macro-scale cosmological fluid envelopes, star formation thresholds, and Primorial 210 mass budget conservation ($27 \text{ Baryon} + 55 \text{ Dark} + 128 \text{ H}_2\text{O} = 210$).
 
 ---
 
